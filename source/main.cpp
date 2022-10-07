@@ -3,6 +3,8 @@
 #include <sstream>
 #include <vector>
 
+#include "exceptions.h"
+
 using namespace std;
 
 class Person {
@@ -25,15 +27,53 @@ private:
 vector<Person> getUsersFromFile(string fileName);
 
 int main() {
+	string file = "data/people.txt";
 	system("cls");
 
-	// ofstream out_f_stream;
-	// out_f_stream.open("Dummy.txt");
+	cout << "Please select 1 of the following actions:" << endl
+		<< "1. Add a user to the file." << endl
+		<< "2. Display all the users" << endl << endl
+		<< "Choice : ";
 
-	// out_f_stream.close();
+	int action;
+	cin >> action;
 
-	vector<Person> UsersFromFile = getUsersFromFile("data/people.txt");
-	cout << "name : " << UsersFromFile[0].getName();
+	if (action == 1) {
+		system("cls");
+		string name;
+		string surname;
+		cout << "New User" << endl
+			<< "\tName : ";
+		cin >> name;
+		cout << endl
+			<< "\tSurname : ";
+		cin >> surname;
+
+		// Save the user
+		ofstream out_f_stream;
+		out_f_stream.open(file, ios::app);
+
+		out_f_stream << "\n" << name << " " << surname;
+
+		out_f_stream.close();
+
+	}
+	else {
+		system("cls");
+
+		try {
+			vector<Person> users = getUsersFromFile(file);
+
+			for (Person user : users) {
+				cout << "Name    : " << user.getName() << endl
+					<< "Surname : " << user.getSurname() << endl << endl;
+			}
+		}
+		catch (loadFileException& err) {
+			cerr << "Failed to load properly";
+			exit(-1);
+		}
+	}
 
 	return 0;
 }
@@ -44,8 +84,7 @@ vector<Person> getUsersFromFile(string fileName) {
 	in_stream.open(fileName);
 
 	if (in_stream.fail()) {
-		cerr << "There was an error with opening the file.";
-		exit(-1);
+		throw loadFileException();
 	}
 
 	string userLine = "";
@@ -63,3 +102,4 @@ vector<Person> getUsersFromFile(string fileName) {
 	in_stream.close();
 	return users;
 }
+
